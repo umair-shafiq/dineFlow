@@ -1,5 +1,6 @@
 package com.dev.dineFlow.dto.response;
 
+import com.dev.dineFlow.entity.enums.AvailabilityStatusEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,8 @@ public class MenuItemResponseDto
     private double price;
 
     private String imageUrl;
+
+    private AvailabilityStatusEnums availabilityStatus;
 
     private CategoryResponseDto category;
 }

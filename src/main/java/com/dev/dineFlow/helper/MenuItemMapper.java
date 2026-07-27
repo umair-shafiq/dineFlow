@@ -23,6 +23,6 @@ public class MenuItemMapper
     {
         CategoryResponseDto categoryResponseDto = new CategoryResponseDto(menuItem.getCategory().getId(), menuItem.getCategory().getName());
 
-        return new MenuItemResponseDto(menuItem.getMenuItemId(), menuItem.getName(), menuItem.getDescription(), menuItem.getPrice(), menuItem.getImageUrl(), categoryResponseDto);
+        return new MenuItemResponseDto(menuItem.getMenuItemId(), menuItem.getName(), menuItem.getDescription(), menuItem.getPrice(), menuItem.getImageUrl(), menuItem.getAvailabilityStatus(), categoryResponseDto);
     }
 }
