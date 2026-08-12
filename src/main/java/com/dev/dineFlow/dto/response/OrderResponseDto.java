@@ -1,6 +1,7 @@
 package com.dev.dineFlow.dto.response;
 
 import com.dev.dineFlow.entity.enums.OrderStatusEnums;
+import com.dev.dineFlow.entity.enums.OrderTypeEnums;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ public class OrderResponseDto
     private RestaurantTableResponseDto restaurantTable;
 
     private OrderStatusEnums orderStatus;
+
+    private OrderTypeEnums orderType;
 
     private double subtotal;
 

@@ -1,6 +1,7 @@
 package com.dev.dineFlow.entity;
 
 import com.dev.dineFlow.entity.enums.OrderStatusEnums;
+import com.dev.dineFlow.entity.enums.OrderTypeEnums;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,12 +25,16 @@ public class Order
     private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_table_id", nullable = false)
+    @JoinColumn(name = "restaurant_table_id")
     private RestaurantTable restaurantTable;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private OrderStatusEnums orderStatus = OrderStatusEnums.PLACED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false)
+    private OrderTypeEnums orderType;
 
     @Column(nullable = false)
     private double subtotal;
