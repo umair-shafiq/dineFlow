@@ -9,6 +9,7 @@ import com.dev.dineFlow.entity.Order;
 import com.dev.dineFlow.entity.OrderItem;
 import com.dev.dineFlow.entity.RestaurantTable;
 import com.dev.dineFlow.entity.enums.OrderStatusEnums;
+import com.dev.dineFlow.entity.enums.OrderTypeEnums;
 import com.dev.dineFlow.exception.ResourceNotFoundException;
 import com.dev.dineFlow.helper.OrderMapper;
 import com.dev.dineFlow.repository.MenuItemRepository;
@@ -40,10 +41,24 @@ public class OrderService
     @Transactional
     public OrderResponseDto createOrder(OrderRequestDto orderRequestDto)
     {
-        RestaurantTable restaurantTable = restaurantTableRepository.findById(orderRequestDto.getRestaurantTableId()).orElseThrow(() -> new ResourceNotFoundException("Table Not Found."));
+        RestaurantTable restaurantTable = null;
+
+        if (orderRequestDto.getOrderType() == OrderTypeEnums.DINE_IN)
+        {
+            if (orderRequestDto.getRestaurantTableId() == null)
+            {
+                throw new IllegalArgumentException("Table is required for dine-in orders");
+            }
+
+            restaurantTable = restaurantTableRepository.findById(orderRequestDto.getRestaurantTableId()).orElseThrow(() -> new ResourceNotFoundException("Table Not Found."));
+        } else if (orderRequestDto.getOrderType() == OrderTypeEnums.TAKEAWAY && orderRequestDto.getRestaurantTableId() != null)
+        {
+            throw new IllegalArgumentException("Takeaway orders should not have a table assigned");
+        }
 
         Order order = new Order();
         order.setRestaurantTable(restaurantTable);
+        order.setOrderType(orderRequestDto.getOrderType());
         order.setOrderNumber(generateOrderNumber());
 
         double subtotal = 0;

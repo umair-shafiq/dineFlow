@@ -17,9 +17,10 @@ public class OrderMapper
     {
         OrderResponseDto orderResponseDto = new OrderResponseDto();
         orderResponseDto.setOrderNumber(order.getOrderNumber());
-        orderResponseDto.setRestaurantTable(restaurantTableMapper.toResponse(order.getRestaurantTable()));
+        orderResponseDto.setRestaurantTable(order.getRestaurantTable() != null ? restaurantTableMapper.toResponse(order.getRestaurantTable()) : null);
         orderResponseDto.setOrderId(order.getOrderId());
         orderResponseDto.setOrderStatus(order.getOrderStatus());
+        orderResponseDto.setOrderType(order.getOrderType());
         orderResponseDto.setSubtotal(order.getSubtotal());
         orderResponseDto.setTaxAmount(order.getTaxAmount());
         orderResponseDto.setTotalAmount(order.getTotalAmount());
