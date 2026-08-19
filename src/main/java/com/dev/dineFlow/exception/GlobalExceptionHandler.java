@@ -72,4 +72,12 @@ public class GlobalExceptionHandler
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleBadCredentials(Exception ex)
+    {
+        Map<String, String> body = new HashMap<>();
+        body.put("error", "Invalid email or password");
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
 }
