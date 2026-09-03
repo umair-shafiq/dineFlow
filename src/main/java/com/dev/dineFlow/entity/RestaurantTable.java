@@ -16,7 +16,7 @@ public class RestaurantTable
     @Column(name = "restaurant_table_id")
     private Long restaurantTableId;
 
-    @Column(name = "table_number", nullable = false)
+    @Column(name = "table_number", nullable = false, unique = true)
     private String tableNumber;
 
     @Column(nullable = false)
