@@ -29,8 +29,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 - [x] **Phase 2 — Order Management:** RestaurantTable, Order, OrderItem — order creation, status lifecycle, tax/total
   calculation, active orders view
 - [x] **Phase 3 — Authentication & Roles:** Spring Security + JWT, User management, role-based access (Admin / Waiter)
-- [ ] **Phase 4 — Table & Reservation Management** — *up next*
-- [ ] Phase 5 — Billing & Payment
+- [x] **Phase 4 — Table & Reservation Management:** Table availability tracking tied to order lifecycle, Reservation CRUD with double-booking prevention
+- [ ] **Phase 5 — Billing & Payment** — *up next*
 - [ ] Phase 6 — Kitchen Display / Order Workflow
 - [ ] Phase 7 — Reports & Analytics
 - [ ] Phase 8 — Advanced (Caching, File Upload, Notifications, Testing, Docker)
@@ -80,6 +80,27 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 | PUT    | /api/users/{id}             | Admin  | Update user details                 |
 | PATCH  | /api/users/{id}/status      | Admin  | Enable/disable a user account       |
 
+### Phase 4 — Restaurant Table
+
+| Method | Endpoint              | Access | Description                          |
+|--------|------------------------|--------|-----------------------------------------|
+| POST   | /api/tables             | Admin  | Create a new table                    |
+| GET    | /api/tables             | Admin  | Get all tables                        |
+| GET    | /api/tables/{id}         | Admin  | Get a single table by ID              |
+| PUT    | /api/tables/{id}         | Admin  | Update table (number, capacity, status) |
+| DELETE | /api/tables/{id}         | Admin  | Delete a table                        |
+
+### Phase 4 — Reservation
+
+| Method | Endpoint                        | Access | Description                                              |
+|--------|------------------------------------|--------|--------------------------------------------------------------|
+| POST   | /api/reservations                   | Admin  | Create a reservation (checks for double-booking conflicts)  |
+| GET    | /api/reservations                   | Admin  | Get all reservations                                        |
+| GET    | /api/reservations/{id}               | Admin  | Get a single reservation by ID                              |
+| PUT    | /api/reservations/{id}               | Admin  | Update reservation (table/time/guests/contact — partial update, re-checks conflicts) |
+| PATCH  | /api/reservations/{id}/status        | Admin  | Update reservation status (PENDING / CONFIRMED / CANCELLED) |
+| DELETE | /api/reservations/{id}               | Admin  | Delete a reservation                                         |
+
 ## Key Design Decisions
 
 - **DTO Pattern:** Entities are never exposed directly through the API. Every module has separate Request/Response DTOs,
@@ -88,6 +109,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
   remain accurate even if menu prices change later.
 - **POS Architecture:** This system is designed for staff use (Admin, Waiter) inside the restaurant — not as a
   customer-facing online ordering platform. Orders can be Dine-in (linked to a RestaurantTable) or Takeaway (no table).
+- **Table Lifecycle Integration:** Table status (`FREE`/`OCCUPIED`/`RESERVED`) is automatically managed by the Order lifecycle — no manual staff intervention needed to free a table after an order completes.
+- **Reservation vs. Live Occupancy:** Reservations represent *future* bookings and are validated independently of a table's current live status, using a time-window overlap check (not the table's real-time `FREE`/`OCCUPIED` state) to prevent double-booking.
 - **Centralized Exception Handling:** A `GlobalExceptionHandler` handles not-found, validation, duplicate, malformed
   request, and authentication errors consistently across all modules.
 - **JWT Authentication:** Stateless authentication using signed JWT tokens. No server-side sessions. Tokens expire after
@@ -128,5 +151,4 @@ On first startup, a default Admin account is created automatically using the cre
 
 ## Status
 
-🚧 Actively in development — **Phase 3 (Authentication & Roles) complete.** Phase 4 (Table & Reservation Management)
-next.
+🚧 Actively in development — **Phase 4 (Table & Reservation Management) complete.** Phase 5 (Billing & Payment) next.

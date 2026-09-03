@@ -10,6 +10,7 @@ import com.dev.dineFlow.entity.OrderItem;
 import com.dev.dineFlow.entity.RestaurantTable;
 import com.dev.dineFlow.entity.enums.OrderStatusEnums;
 import com.dev.dineFlow.entity.enums.OrderTypeEnums;
+import com.dev.dineFlow.entity.enums.TableStatusEnums;
 import com.dev.dineFlow.exception.ResourceNotFoundException;
 import com.dev.dineFlow.helper.OrderMapper;
 import com.dev.dineFlow.repository.MenuItemRepository;
@@ -51,6 +52,15 @@ public class OrderService
             }
 
             restaurantTable = restaurantTableRepository.findById(orderRequestDto.getRestaurantTableId()).orElseThrow(() -> new ResourceNotFoundException("Table Not Found."));
+
+            if (restaurantTable.getTableStatus() != TableStatusEnums.FREE)
+            {
+                throw new IllegalArgumentException("Table should be FREE for dine-in orders");
+            }
+
+            restaurantTable.setTableStatus(TableStatusEnums.OCCUPIED);
+            restaurantTableRepository.save(restaurantTable);
+
         } else if (orderRequestDto.getOrderType() == OrderTypeEnums.TAKEAWAY && orderRequestDto.getRestaurantTableId() != null)
         {
             throw new IllegalArgumentException("Takeaway orders should not have a table assigned");
@@ -103,11 +113,21 @@ public class OrderService
         return orderMapper.toResponse(order);
     }
 
+    @Transactional
     public OrderResponseDto updateOrderStatus(Long id, OrderStatusEnums newStatus)
     {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        Order order = orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         order.setOrderStatus(newStatus);
+
+        boolean isFinalStatus = (newStatus == OrderStatusEnums.COMPLETED || newStatus == OrderStatusEnums.CANCELLED);
+
+        if (isFinalStatus && order.getRestaurantTable() != null)
+        {
+            RestaurantTable restaurantTable = order.getRestaurantTable();
+            restaurantTable.setTableStatus(TableStatusEnums.FREE);
+            restaurantTableRepository.save(restaurantTable);
+        }
+
         Order updated = orderRepository.save(order);
         return orderMapper.toResponse(updated);
     }
