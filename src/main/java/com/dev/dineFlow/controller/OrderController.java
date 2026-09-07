@@ -2,7 +2,9 @@ package com.dev.dineFlow.controller;
 
 import com.dev.dineFlow.dto.request.OrderRequestDto;
 import com.dev.dineFlow.dto.request.OrderStatusUpdateRequestDto;
+import com.dev.dineFlow.dto.response.InvoiceResponseDto;
 import com.dev.dineFlow.dto.response.OrderResponseDto;
+import com.dev.dineFlow.service.InvoiceService;
 import com.dev.dineFlow.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import java.util.List;
 public class OrderController
 {
     private final OrderService orderService;
+
+    private final InvoiceService invoiceService;
 
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto orderRequestDto)
@@ -49,5 +53,11 @@ public class OrderController
     public ResponseEntity<List<OrderResponseDto>> getActiveOrders()
     {
         return ResponseEntity.ok(orderService.getActiveOrders());
+    }
+
+    @PostMapping("/{id}/invoice")
+    public ResponseEntity<InvoiceResponseDto> generateInvoice(@PathVariable Long id)
+    {
+        return new ResponseEntity<>(invoiceService.generateInvoice(id), HttpStatus.CREATED);
     }
 }

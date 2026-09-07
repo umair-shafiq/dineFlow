@@ -30,8 +30,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
   calculation, active orders view
 - [x] **Phase 3 — Authentication & Roles:** Spring Security + JWT, User management, role-based access (Admin / Waiter)
 - [x] **Phase 4 — Table & Reservation Management:** Table availability tracking tied to order lifecycle, Reservation CRUD with double-booking prevention
-- [ ] **Phase 5 — Billing & Payment** — *up next*
-- [ ] Phase 6 — Kitchen Display / Order Workflow
+- [x] **Phase 5 — Billing & Payment:** Invoice generation, payment recording, receipt-ready nested data
+- [ ] **Phase 6 — Kitchen Display / Order Workflow** — *up next*
 - [ ] Phase 7 — Reports & Analytics
 - [ ] Phase 8 — Advanced (Caching, File Upload, Notifications, Testing, Docker)
 
@@ -101,6 +101,15 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 | PATCH  | /api/reservations/{id}/status        | Admin  | Update reservation status (PENDING / CONFIRMED / CANCELLED) |
 | DELETE | /api/reservations/{id}               | Admin  | Delete a reservation                                         |
 
+### Phase 5 — Invoice & Payment
+
+| Method | Endpoint                        | Access         | Description                                        |
+|--------|------------------------------------|----------------|-------------------------------------------------------|
+| GET    | /api/invoices                       | Admin, Waiter  | Get all invoices                                     |
+| GET    | /api/invoices/{id}                   | Admin, Waiter  | Get a single invoice — full receipt-ready nested data |
+| POST   | /api/invoices/{id}/payment           | Admin, Waiter  | Record a payment, marks invoice PAID                 |
+| GET    | /api/invoices/{id}/payment           | Admin, Waiter  | Get payment details for an invoice                   |
+
 ## Key Design Decisions
 
 - **DTO Pattern:** Entities are never exposed directly through the API. Every module has separate Request/Response DTOs,
@@ -111,6 +120,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
   customer-facing online ordering platform. Orders can be Dine-in (linked to a RestaurantTable) or Takeaway (no table).
 - **Table Lifecycle Integration:** Table status (`FREE`/`OCCUPIED`/`RESERVED`) is automatically managed by the Order lifecycle — no manual staff intervention needed to free a table after an order completes.
 - **Reservation vs. Live Occupancy:** Reservations represent *future* bookings and are validated independently of a table's current live status, using a time-window overlap check (not the table's real-time `FREE`/`OCCUPIED` state) to prevent double-booking.
+- **Invoice Generation is Manual, Not Status-Triggered:** Invoices are generated on-demand via a dedicated endpoint rather than automatically tied to a specific order status, since real restaurants bill at different points in the order lifecycle (before preparation for quick-service, after serving for dine-in).
+- **Printing is a Frontend/Hardware Concern:** The backend returns structured, receipt-ready invoice data; formatting for thermal printers and triggering print happens client-side.
 - **Centralized Exception Handling:** A `GlobalExceptionHandler` handles not-found, validation, duplicate, malformed
   request, and authentication errors consistently across all modules.
 - **JWT Authentication:** Stateless authentication using signed JWT tokens. No server-side sessions. Tokens expire after
@@ -151,4 +162,4 @@ On first startup, a default Admin account is created automatically using the cre
 
 ## Status
 
-🚧 Actively in development — **Phase 4 (Table & Reservation Management) complete.** Phase 5 (Billing & Payment) next.
+🚧 Actively in development — **Phase 5 (Billing & Payment) complete.** Phase 6 (Kitchen Display / Order Workflow) next.
