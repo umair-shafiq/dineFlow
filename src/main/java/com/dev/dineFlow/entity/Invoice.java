@@ -1,6 +1,5 @@
 package com.dev.dineFlow.entity;
 
-import com.dev.dineFlow.entity.enums.DiscountTypeEnums;
 import com.dev.dineFlow.entity.enums.PaymentStatusEnums;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,16 +27,6 @@ public class Invoice
 
     @Column(nullable = false)
     private double subtotal;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "discount_type", nullable = false)
-    private DiscountTypeEnums discountType = DiscountTypeEnums.NONE;
-
-    @Column(name = "discount_value", nullable = false)
-    private double discountValue = 0;
-
-    @Column(name = "discount_amount", nullable = false)
-    private double discountAmount = 0;
 
     @Column(name = "tax_amount", nullable = false)
     private double taxAmount;
