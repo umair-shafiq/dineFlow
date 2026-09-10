@@ -31,8 +31,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 - [x] **Phase 3 — Authentication & Roles:** Spring Security + JWT, User management, role-based access (Admin / Waiter)
 - [x] **Phase 4 — Table & Reservation Management:** Table availability tracking tied to order lifecycle, Reservation CRUD with double-booking prevention
 - [x] **Phase 5 — Billing & Payment:** Invoice generation, payment recording, receipt-ready nested data
-- [ ] **Phase 6 — Kitchen Display / Order Workflow** — *up next*
-- [ ] Phase 7 — Reports & Analytics
+- [x] **Phase 6 — Kitchen Display / Order Workflow:** Chef role, item-level cooking status, kitchen-facing order view
+- [ ] **Phase 7 — Reports & Analytics** — *up next*
 - [ ] Phase 8 — Advanced (Caching, File Upload, Notifications, Testing, Docker)
 
 ## API Endpoints
@@ -110,6 +110,13 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 | POST   | /api/invoices/{id}/payment           | Admin, Waiter  | Record a payment, marks invoice PAID                 |
 | GET    | /api/invoices/{id}/payment           | Admin, Waiter  | Get payment details for an invoice                   |
 
+### Phase 6 — Kitchen
+
+| Method | Endpoint                              | Access       | Description                                              |
+|--------|------------------------------------------|--------------|----------------------------------------------------------------|
+| GET    | /api/kitchen/orders                       | Admin, Chef  | Get active orders (PLACED/IN_PROGRESS) with item-level status  |
+| PATCH  | /api/kitchen/order-items/{id}/status       | Admin, Chef  | Update an order item's cooking status (PENDING/COOKING/READY)  |
+
 ## Key Design Decisions
 
 - **DTO Pattern:** Entities are never exposed directly through the API. Every module has separate Request/Response DTOs,
@@ -121,6 +128,9 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 - **Table Lifecycle Integration:** Table status (`FREE`/`OCCUPIED`/`RESERVED`) is automatically managed by the Order lifecycle — no manual staff intervention needed to free a table after an order completes.
 - **Reservation vs. Live Occupancy:** Reservations represent *future* bookings and are validated independently of a table's current live status, using a time-window overlap check (not the table's real-time `FREE`/`OCCUPIED` state) to prevent double-booking.
 - **Invoice Generation is Manual, Not Status-Triggered:** Invoices are generated on-demand via a dedicated endpoint rather than automatically tied to a specific order status, since real restaurants bill at different points in the order lifecycle (before preparation for quick-service, after serving for dine-in).
+- **Item-Level Kitchen Status:** Cooking progress is tracked per `OrderItem`, not per `Order` — since different items in the same order finish cooking at different times. Order-level status (Phase 2) and item-level status (Phase 6) are intentionally separate concerns.
+- **Audience-Specific Response DTOs:** The same underlying Order/OrderItem data is exposed differently depending on the consumer — e.g., Kitchen DTOs omit pricing and category data that a Chef doesn't need, while Waiter/Admin views include full financial details.
+- **Polling Before WebSocket:** Near-real-time updates (kitchen display, waiter notification of ready items) are implemented via simple periodic refresh (polling) for now; WebSocket-based push notifications are deferred to a later phase as a deliberate scoping decision, not an oversight.
 - **Printing is a Frontend/Hardware Concern:** The backend returns structured, receipt-ready invoice data; formatting for thermal printers and triggering print happens client-side.
 - **Centralized Exception Handling:** A `GlobalExceptionHandler` handles not-found, validation, duplicate, malformed
   request, and authentication errors consistently across all modules.
@@ -162,4 +172,4 @@ On first startup, a default Admin account is created automatically using the cre
 
 ## Status
 
-🚧 Actively in development — **Phase 5 (Billing & Payment) complete.** Phase 6 (Kitchen Display / Order Workflow) next.
+🚧 Actively in development — **Phase 6 (Kitchen Display / Order Workflow) complete.** Phase 7 (Reports & Analytics) next.

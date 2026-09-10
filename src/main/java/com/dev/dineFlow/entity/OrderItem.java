@@ -1,5 +1,6 @@
 package com.dev.dineFlow.entity;
 
+import com.dev.dineFlow.entity.enums.OrderItemStatusEnums;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,4 +32,8 @@ public class OrderItem
 
     @Column(nullable = false)
     private double subtotal;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "item_status", nullable = false)
+    private OrderItemStatusEnums itemStatus = OrderItemStatusEnums.PENDING;
 }
