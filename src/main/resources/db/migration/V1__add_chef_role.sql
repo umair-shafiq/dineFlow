@@ -1,0 +1,2 @@
+ALTER TABLE users
+    MODIFY COLUMN user_role ENUM('ADMIN', 'WAITER', 'CHEF') NULL;
