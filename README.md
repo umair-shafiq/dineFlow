@@ -32,8 +32,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 - [x] **Phase 4 — Table & Reservation Management:** Table availability tracking tied to order lifecycle, Reservation CRUD with double-booking prevention
 - [x] **Phase 5 — Billing & Payment:** Invoice generation, payment recording, receipt-ready nested data
 - [x] **Phase 6 — Kitchen Display / Order Workflow:** Chef role, item-level cooking status, kitchen-facing order view
-- [ ] **Phase 7 — Reports & Analytics** — *up next*
-- [ ] Phase 8 — Advanced (Caching, File Upload, Notifications, Testing, Docker)
+- [x] **Phase 7 — Reports & Analytics:** Sales reports, most-ordered items, revenue by category, peak hours — via JPQL DTO projections
+- [ ] **Phase 8 — Advanced** — *up next* (Discounts, Caching, File Upload, PDF Export, WebSocket Notifications, Testing, Docker)
 
 ## API Endpoints
 
@@ -117,6 +117,16 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 | GET    | /api/kitchen/orders                       | Admin, Chef  | Get active orders (PLACED/IN_PROGRESS) with item-level status  |
 | PATCH  | /api/kitchen/order-items/{id}/status       | Admin, Chef  | Update an order item's cooking status (PENDING/COOKING/READY)  |
 
+### Phase 7 — Reports
+
+| Method | Endpoint                                             | Access | Description                                              |
+|--------|----------------------------------------------------------|--------|----------------------------------------------------------------|
+| GET    | /api/reports/sales?startDate=...&endDate=...              | Admin  | Sales summary (order count, revenue, tax) for a date range, COMPLETED orders only |
+| GET    | /api/reports/most-ordered-items?limit=10                   | Admin  | Top N best-selling menu items by quantity sold                |
+| GET    | /api/reports/revenue-by-category                            | Admin  | Revenue aggregated and grouped by menu category                |
+| GET    | /api/reports/peak-hours                                      | Admin  | Order count grouped by hour of day                              |
+
+
 ## Key Design Decisions
 
 - **DTO Pattern:** Entities are never exposed directly through the API. Every module has separate Request/Response DTOs,
@@ -130,6 +140,8 @@ This backend is being built in **8 total phases**. Current status: **Phase 2 com
 - **Invoice Generation is Manual, Not Status-Triggered:** Invoices are generated on-demand via a dedicated endpoint rather than automatically tied to a specific order status, since real restaurants bill at different points in the order lifecycle (before preparation for quick-service, after serving for dine-in).
 - **Item-Level Kitchen Status:** Cooking progress is tracked per `OrderItem`, not per `Order` — since different items in the same order finish cooking at different times. Order-level status (Phase 2) and item-level status (Phase 6) are intentionally separate concerns.
 - **Audience-Specific Response DTOs:** The same underlying Order/OrderItem data is exposed differently depending on the consumer — e.g., Kitchen DTOs omit pricing and category data that a Chef doesn't need, while Waiter/Admin views include full financial details.
+- **Reports Reflect COMPLETED Orders Only:** All revenue, sales, and quantity figures explicitly exclude `CANCELLED` orders, so cancelled transactions never inflate business metrics.
+- **DTO Projections for Reporting:** Aggregate reports use JPQL `SELECT new DtoClass(...)` projections to build lightweight response objects directly from the database query, avoiding the overhead of loading and mapping full entities for read-only analytical data.
 - **Polling Before WebSocket:** Near-real-time updates (kitchen display, waiter notification of ready items) are implemented via simple periodic refresh (polling) for now; WebSocket-based push notifications are deferred to a later phase as a deliberate scoping decision, not an oversight.
 - **Printing is a Frontend/Hardware Concern:** The backend returns structured, receipt-ready invoice data; formatting for thermal printers and triggering print happens client-side.
 - **Centralized Exception Handling:** A `GlobalExceptionHandler` handles not-found, validation, duplicate, malformed
@@ -172,4 +184,4 @@ On first startup, a default Admin account is created automatically using the cre
 
 ## Status
 
-🚧 Actively in development — **Phase 6 (Kitchen Display / Order Workflow) complete.** Phase 7 (Reports & Analytics) next.
+🚧 Actively in development — **Phase 7 (Reports & Analytics) complete.** Phase 8 (Advanced) next.
